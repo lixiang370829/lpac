@@ -9,7 +9,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(__MINGW32__)
 static char *strndup(const char *s, size_t n) {
     size_t len = strnlen(s, n);
     char *new = (char *)malloc(len + 1);

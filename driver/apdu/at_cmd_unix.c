@@ -121,11 +121,19 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
             goto end;
         }
 
-        if (expected && strncmp(line, expected, strlen(expected)) == 0) {
-            free(found_response_data);
-            found_response_data = strdup(line + strlen(expected));
-            while (*found_response_data == ' ')
-                memmove(found_response_data, found_response_data + 1, strlen(found_response_data));
+        if (expected) {
+            size_t expected_len = strlen(expected);
+            while (expected_len > 0 && expected[expected_len - 1] == ' ') {
+                expected_len--;
+            }
+            if (strncmp(line, expected, expected_len) == 0) {
+                free(found_response_data);
+                const char *p = line + expected_len;
+                while (*p == ' ') {
+                    p++;
+                }
+                found_response_data = strdup(p);
+            }
         }
     }
 end:

@@ -12,6 +12,10 @@
 #define ENV_AT_DEBUG APDU_ENV_NAME(AT, DEBUG)
 #define ENV_AT_DEVICE APDU_ENV_NAME(AT, DEVICE)
 
+#if defined(_WIN32)
+#include <windows.h>
+#endif
+
 struct at_userdata {
     char *default_device;
 #if defined(_WIN32)

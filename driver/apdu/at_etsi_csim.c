@@ -121,6 +121,7 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     select_cmd[4] = aid_len;
     memcpy(select_cmd + 5, aid, aid_len);
 
+    free(resp);
     resp = NULL;
     resp_len = 0;
     if (apdu_interface_transmit(ctx, &resp, &resp_len, select_cmd, 5 + aid_len) != 0) {
