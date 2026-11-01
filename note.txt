@@ -1,0 +1,38 @@
+编译环境：
+1.下载并安装 MSYS2。
+2.安装完成后，在开始菜单中找到并打开 MSYS2 MinGW 64-bit（或 MSYS2 UCRT 64-bit）终端。
+3.在终端中运行以下命令，安装 CMake、GCC 工具链以及 Git：
+	pacman -S mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc git make
+
+编译指令：
+cmake -B build -DLPAC_WITH_APDU_AT=ON -DSTANDALONE_MODE=ON -DBUILD_TESTING=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF
+cmake --build build
+DESTDIR=output cmake --install build
+
+整理发布目录： 	
+executables/
+├── lpac.exe
+├── libeuicc.dll
+├── libeuicc-drivers.dll
+├── libeuicc-driver-loader.dll
+├── liblpac-utils.dll
+├── libwinpthread-1.dll               <-- 复制自 D:\MSYS2\mingw64\bin\
+├── libgcc_s_seh-1.dll                <-- 复制自 D:\MSYS2\mingw64\bin\
+└── driver/                           <-- 驱动必须放在 driver 子文件夹中！
+    ├── driver_apdu_at.dll
+    ├── driver_apdu_at_csim.dll
+    ├── driver_apdu_pcsc.dll
+    └── driver_http_winhttp.dll
+	
+测试命令：
+powershell>>
+
+$env:LPAC_APDU="at"
+$env:LPAC_APDU="at_csim"
+$env:LPAC_APDU_AT_DEVICE="COM7"
+$env:LPAC_APDU_DEBUG="true"
+$env:LIBEUICC_DEBUG_APDU="1"
+
+.\lpac.exe chip info
+.\lpac.exe profile list
+.\lpac.exe profile download -a 'LPA:1$secsmsminiapp.eastcompeace.com$331A5D9DB50540089F0E2CCDB8E85CEA'
