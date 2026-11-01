@@ -24,16 +24,16 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) {
     at_emit_command(userdata, "AT");
     if (at_expect(userdata, NULL, NULL) != 0) {
         fprintf(stderr, "Device not responding to AT commands\n");
-        return false;
+        return -1;
     }
 
     at_emit_command(userdata, "AT+CSIM=?");
     if (at_expect(userdata, NULL, NULL) != 0) {
         fprintf(stderr, "Device missing +CSIM support\n");
-        return false;
+        return -1;
     }
 
-    return true;
+    return 0;
 }
 
 static void apdu_interface_disconnect(struct euicc_ctx *ctx) {
@@ -57,16 +57,23 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     euicc_hexutil_bin2hex(encoded, tx_len * 2 + 1, tx, tx_len);
 
     at_emit_command(userdata, "AT+CSIM=%u,\"%s\"", tx_len * 2, encoded);
-    if (at_expect(userdata, &response, "+CSIM: ") != 0 || response == NULL)
+    if (at_expect(userdata, &response, "+CSIM:") != 0 || response == NULL)
         goto err;
 
     // Parse the response
     {
         strtok(response, ",");        // Skip the length part
         response = strtok(NULL, ","); // Get the response part
+        if (response == NULL)
+            goto err;
+        while (*response == ' ')
+            response++;
         // unquote strings
-        const size_t n = strlen(response);
-        if (response[0] == '"' && response[n - 1] == '"') {
+        size_t n = strlen(response);
+        while (n > 0 && (response[n - 1] == ' ' || response[n - 1] == '\r' || response[n - 1] == '\n')) {
+            response[--n] = '\0';
+        }
+        if (n >= 2 && response[0] == '"' && response[n - 1] == '"') {
             memmove(response, response + 1, n - 2);
             response[n - 2] = '\0'; // Null-terminate the new string
         }

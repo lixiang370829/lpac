@@ -113,7 +113,8 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
 
         AT_DEBUG_RX(line);
 
-        if (strcmp(line, "ERROR") == 0) {
+        if (strcmp(line, "ERROR") == 0 || strncmp(line, "+CME ERROR", 10) == 0 ||
+            strncmp(line, "+CMS ERROR", 10) == 0) {
             result = -1;
             goto end;
         }
@@ -172,6 +173,15 @@ int at_device_open(struct at_userdata *userdata, const char *device_name) {
         CloseHandle(userdata->hComm);
         return -1;
     }
+
+    COMMTIMEOUTS timeouts = {
+        .ReadIntervalTimeout = 50,
+        .ReadTotalTimeoutConstant = 5000,
+        .ReadTotalTimeoutMultiplier = 10,
+        .WriteTotalTimeoutConstant = 2000,
+        .WriteTotalTimeoutMultiplier = 10,
+    };
+    SetCommTimeouts(userdata->hComm, &timeouts);
 
     return 0;
 }
